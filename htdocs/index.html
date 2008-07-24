@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>CampusNET search</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link rel="stylesheet" type="text/css" href="style.css" />
+<script type="text/javascript" src="ajax.js"></script>
+<script type="text/javascript" src="sparql.js"></script>
+<script type="text/javascript" src="search.js"></script>
+</head>
+
+<body>
+
+<!-- SEARCH BOX -->
+<form method="get" action="no_js.html" onsubmit="
+search( document.getElementById('terms').value,
+        document.getElementById('search_button'),
+        document.getElementById('results'));
+return false;">
+<input type="text" id="terms" size="40" />
+<input type="submit" id="search_button" value="Search..." />
+</form>
+
+<!-- RESULTS VIEW -->
+<div id="results">
+<div class="result">
+<a href=""><span class="source">smb://foo/bar/baz</span></a>
+<span class="source">smb://foo/bar/baz</span>
+<span class="source">smb://foo/bar/baz</span>
+<span class="description">Foo bar baz</span>
+<span class="error">Foo bar baz</span>
+</div>
+</div>
+
+</body>
+
+</html>

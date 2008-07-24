@@ -1,0 +1,5 @@
+#!/bin/sh
+
+purge-hosts
+look-for-hosts
+index-hosts

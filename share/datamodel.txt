@@ -1,0 +1,24 @@
+@prefix : <http://maks.student.utwente.nl/ns/smb#>
+
+<uri> :type 'host'/'share'/'directory'/'file'
+<uri> :contains <uri>
+
+All nodes:
+<uri> :keyword      [a keyword associated with this file]
+<uri> :description  [description]
+<uri> :mediaType    [mime type]
+<uri> :digest       [digest]
+<uri> :lastModified [date on which it was last modified]
+<uri> :alias        [alternate path]
+
+Host:
+<uri> {cn:ipAddress}    [IPv4 address]
+<uri> {cn:lastIndexed}  [date on which it was last indexed]
+
+Files:
+<uri> {cn:size}         [size of file]
+<uri> {cn:error}        [error message]
+
+Directories:
+<uri> {cn:size}         [aggreated size of files and directories contained]
+<uri> {cn:files}        [aggreated number of files contained]

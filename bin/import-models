@@ -1,0 +1,34 @@
+#!/usr/bin/env perl
+
+use strict;
+my $BASEDIR = `dirname "$0"`; chomp($BASEDIR);
+chdir("$BASEDIR/../var/hosts") or die $!;
+
+# Returns the modification time for the given filepath
+sub mtime
+{
+    my @st = stat($_[0]);
+    return $st[9];
+}
+
+# Record start time
+die 'Existing var/import found' if -e '../import';
+system '/usr/bin/touch', '../import';
+
+# Figure out time of previous import
+my $last_update = mtime('../last_import');
+
+# Select files to be imported
+opendir(DIR, '.');
+my @filenames = grep { -f $_ && mtime($_) > $last_update } readdir(DIR);
+closedir(DIR);
+
+# Process files
+foreach my $filename (@filenames)
+{
+    next if mtime($filename) < $last_update;
+    system "$BASEDIR/import", "$BASEDIR/../var/campusnet.db", "smb://$filename", $filename;
+}
+
+# Store start time for next run
+system '/bin/mv', '../import', '../last_import';

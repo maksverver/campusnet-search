@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+<title>SPARQL query interface</title>
+<style type="text/css">
+body {
+    background: #ace;
+    font-family: sans-serif;
+}
+
+h1 {
+    font-size: 20pt;
+    text-align: center;
+}
+
+#error {
+    color: red;
+    font-weight: bold;
+}
+
+.pane {
+    background: #fff;
+    border: 1px solid black;
+    margin: 1px 1em 0 1em;
+    padding: 1em;
+}
+
+.tabs {
+    padding: 1em 2em 0 2em;
+    font-weight: bold;
+}
+
+.active-tab {
+    background: #fff;
+    margin: 0 0.2em 0 0.2em;
+    padding: 0.1em 1em 0.1em 1em;
+    border: 1px solid black;
+    border-bottom: 1px solid white;
+}
+
+.hidden-tab {
+    background: #ddd;
+    margin: 0 0.2em 0 0.2em;
+    padding: 0.1em 1em 0.1em 1em;
+    border: 1px solid black;
+}
+
+.tabs a {
+    color: black;
+    text-decoration: none;
+}
+
+#query {
+    background: #eee;
+}
+
+#resulttext {
+    background: #eee;
+    border: 1px dashed #888;
+    padding: 0.5em;
+    font-family: monospace;
+    font-size: smaller;
+}
+
+#resulttable {
+    font-size: smaller;
+}
+
+#resulttable td {
+    padding: 0 0.5em 0 0.5em;
+}
+
+#resulttable tr.evenrow {
+    background: #eee;
+}
+
+#resulttable td.rowno {
+    text-align: right;
+}
+
+#resulttable .header td {
+    font-size: larger;
+    font-weight: bold;
+    border-bottom: 1px dashed #888;
+}
+
+</style>
+<script type="text/javascript" src="ajax.js"></script>
+<script type="text/javascript" src="sparql.js"></script>
+<script type="text/javascript"><!--
+function set_error(str)
+{
+    document.getElementById('error').appendChild(document.createTextNode(str));
+}
+
+function clear_all()
+{
+    /* Clear error */
+    var elem = document.getElementById('error');
+    while(elem.firstChild)
+        elem.removeChild(elem.firstChild);
+
+    /* Clear result text */
+    var elem = document.getElementById('resulttext');
+    while(elem.firstChild)
+        elem.removeChild(elem.firstChild);
+
+    /* Clear result table */
+    var elem = document.getElementById('resulttable');
+    while(elem.firstChild)
+        elem.removeChild(elem.firstChild);
+}
+
+function process_query_result(request)
+{
+    document.getElementById('querybutton').disabled = false;
+
+    /* Set result text */
+    document.getElementById('resulttext').appendChild(
+        document.createTextNode(request.responseText) );
+
+    /* Parse results */
+    if( request.responseXML == null ||
+        (result = parse_sparql(request.responseXML.documentElement)) == null )
+    {
+        set_error('Web interface was unable to parse response text (see "Result source" for details).');
+    }
+    else
+    if(result['error'])
+    {
+        set_error(result['error']);
+    }
+    else
+    {
+        // Create result table
+        var table = document.createElement('table');
+        document.getElementById('resulttable').appendChild(table);
+
+        // Create header
+        var row = table.insertRow(0);
+        row.className = 'header';
+        row.insertCell(0);
+        for(var col = 0; col < result['header'].length; ++col)
+        {
+            var cell = row.insertCell(col+1);
+            cell.appendChild(document.createTextNode(result['header'][col]));
+        }
+
+        // Create result rows
+        for(var r = 0; r < result['results'].length; ++r)
+        {
+            var res = result['results'][r];
+            var row = table.insertRow(r + 1);
+
+            row.className = (r%2 ? 'evenrow' : 'oddrow');
+            var cell = row.insertCell(0);
+            cell.className = 'rowno';
+            cell.appendChild(document.createTextNode(r + 1))
+
+            for(var col = 0; col < result['header'].length; ++col)
+            {
+                var cell = row.insertCell(col + 1);
+                var value = res[result['header'][col]];
+                if(value != null)
+                    cell.appendChild(document.createTextNode(value));
+            }
+        }
+
+        select_tab(2);
+    }
+}
+
+function send_query()
+{
+    clear_all();
+    document.getElementById('querybutton').disabled = true;
+    var elem = document.getElementById('query');
+    request('webquery.fcgi', process_query_result, 'POST', elem.value, 'application/sparql-query');
+}
+
+tabs = 3;
+function select_tab(selectedTab)
+{
+    for(var tab = 0; tab < tabs; ++tab)
+    {
+        document.getElementById('tab'+tab).className =
+            (tab == selectedTab) ? 'active-tab' : 'hidden-tab';
+        document.getElementById('pane'+tab).style.display =
+            (tab == selectedTab) ? 'block' : 'none';
+    }
+}
+//-->
+</script>
+</head>
+
+<body>
+<div class="tabs"><a href="javascript:select_tab(0);"><span id="tab0" class="active-tab">Query form</span></a>
+<a href="javascript:select_tab(1);"><span id="tab1" class="hidden-tab">Result source</span></a>
+<a href="javascript:select_tab(2);"><span id="tab2" class="hidden-tab">Result table</span></a></div>
+
+<div class="pane" id="pane0">
+<p id="error"></p>
+
+<p>Query:<br/><textarea id="query" cols="60" rows="12">
+PREFIX :    &lt;http://maks.student.utwente.nl/ns/smb#&gt;
+PREFIX xsd: &lt;http://www.w3.org/2001/XMLSchema#&gt;
+SELECT ?host ?files ?size
+WHERE { ?host :type 'host' ;
+              :files ?files ;
+              :size ?size }
+ORDER BY DESC(?size)
+</textarea></p>
+<p><input id="querybutton" type="submit" onclick="send_query();" value="Execute SPARQL query..."/></p>
+</div>
+
+<div class="pane" id="pane1" style="display: none">
+<div id="resulttext"></div>
+</div>
+
+<div class="pane" id="pane2" style="display: none">
+<div id="resulttable"></div>
+</div>
+
+</body>
+</html>

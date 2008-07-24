@@ -1,0 +1,17 @@
+#!/usr/bin/env perl
+
+use strict;
+
+my $PERIOD = time() - 30*24*60*60;  # Expiration date
+my $BASEDIR = `dirname "$0"`; chomp($BASEDIR);
+
+chdir("$BASEDIR/../var/hosts") or die $!;
+
+opendir DIR, '.';
+my @hosts;
+while(my $filename = readdir DIR)
+{
+    my @st = stat($filename);
+    unlink($filename) if($st[7] == 0 || $st[9] < $PERIOD);
+}
+closedir DIR;

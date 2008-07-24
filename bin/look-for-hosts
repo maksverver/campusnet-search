@@ -1,0 +1,20 @@
+#!/usr/bin/env perl
+
+use strict;
+
+my $NETWORKRANGE='130.89.161.226/19';
+
+my $BASEDIR = `dirname "$0"`; chomp($BASEDIR);
+
+chdir "$BASEDIR/../var/hosts";
+
+open(PIPE, "nbtscan -s ':' $NETWORKRANGE 2>/dev/null |");
+while(chomp(my $line = <PIPE>))
+{
+    my ($ip, $name, $server, $user, $mac) = split /:/, $line;
+    my ($name) = ($name =~ /^(.*?)\s*$/); $name = lc($name);
+
+    next unless $name =~ /^[!@#$%^&()'{}.~a-zA-Z0-9-]+$/;
+
+    system '/usr/bin/touch', $name unless -e $name;
+}

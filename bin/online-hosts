@@ -1,0 +1,19 @@
+#!/usr/bin/env perl
+use strict;
+use POSIX qw(strftime);
+
+print "\@prefix : <http://maks.student.utwente.nl/ns/smb#> .\n";
+print "\@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n";
+
+my $time = strftime('%Y-%m-%dT%H:%M:%S', gmtime());
+my $NETWORKRANGE='130.89.161.226/19';
+open(PIPE, "nbtscan -s ':' $NETWORKRANGE 2>/dev/null |");
+while(chomp(my $line = <PIPE>))
+{
+    my ($ip, $name, $server, $user, $mac) = split /:/, $line;
+    my ($name) = ($name =~ /^(.*?)\s*$/); $name = lc($name);
+
+    next unless $name =~ /^[!@#$%^&()'{}.~a-zA-Z0-9-]+$/;
+
+    print "<smb://$name> :onlineAt \"$time\"^^<xsd:dateTime> .\n";
+}

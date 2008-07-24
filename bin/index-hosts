@@ -1,0 +1,48 @@
+#!/usr/bin/env perl
+
+use strict;
+
+my $PROCESSES = 4;                 # Number of parallel indexing processes
+my $PERIOD = time() - 3*24*60*60;  # Minimal period between updates
+my $BASEDIR = `dirname "$0"`; chomp($BASEDIR);
+
+my %BANNED;
+open(BANNED, "<$BASEDIR/../var/banned") or die 'Ban list not found';
+while(my $host = <BANNED>) {
+    chomp $host;
+    $BANNED{lc $host} = 1;
+}
+
+chdir("$BASEDIR/../var/hosts") or die $!;
+
+opendir DIR, '.';
+my @hosts;
+while(my $filename = readdir DIR)
+{
+    next unless -f $filename;
+    my @st = stat($filename);
+    next unless ($st[7] == 0 || $st[9] < $PERIOD);
+    push @hosts, $filename;
+}
+closedir DIR;
+
+my $childs = 0;
+while(@hosts)
+{
+    my $host = pop @hosts;
+    
+    next if($BANNED{lc $host});
+        
+    if($childs < $PROCESSES) {
+        ++$childs;
+    } else {
+        wait();
+    }
+    
+    if(fork() == 0)
+    {
+        exec "$BASEDIR/indexer", $host, $host;
+        die "Unable to start indexing host \"$host\"";
+    }
+}
+while(wait() != -1) { };

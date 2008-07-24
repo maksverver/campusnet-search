@@ -1,0 +1,49 @@
+body {
+    font: 11pt sans-serif;
+    background: #F8F8F8;
+    margin: 20px;
+    padding: 0px;
+}
+a {
+    text-decoration: none;
+    color: #0000FF;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+b, th, th a {
+    font-weight: bold;
+    font-size: 10.5pt;
+    color: #E08000;
+}
+
+/* Search box */
+
+#terms {
+}
+
+/* Results */
+
+.result {
+}
+
+.source {
+    display: block;
+    color:   blue;
+}
+
+.description {
+    font-style: italic;
+}
+
+.error {
+    display: block;
+    color: red;
+    background: url(icons/error.png);
+}
+
+.noresults {
+    font-weight: bold;
+    color: #E08000;
+}
